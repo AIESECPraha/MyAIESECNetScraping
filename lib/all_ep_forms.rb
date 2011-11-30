@@ -9,10 +9,11 @@ def login! agent, user, pw
   agent.submit(login_form)
 end
 
-def all_ep_forms agent, date_from, date_to
+def all_ep_forms agent, date_from, date_to, ti
   counter = 1
   page = agent.current_page
   until page.search("[@color='green']").to_s.include? "No Records Available."
+    puts "Loading new index page..."
     page = agent.post 'http://www.myaiesec.net/exchange/browsestudent.do?operation=BrowseStudentSearchResult&page=' + counter.to_s,
         {
           'date_from' => date_from.to_s,
@@ -43,7 +44,7 @@ def all_ep_forms agent, date_from, date_to
           nil,
           {
             'Cookie' => agent.cookies.first.to_s
-          }) {|getPage| yield ep_id, getPage }
+          }) {|getPage| ti.leap "site loading"; yield ep_id, getPage }
       end
     end
     counter += 1
