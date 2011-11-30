@@ -10,7 +10,16 @@ class EPForm
     
     @categories = []
     @id = id
-    category = nil
+    
+    
+    ####### CATEGORY General ########    
+    category = EPFormCategory.new('General')
+    @categories << category
+    if page.search("div[@class='right-content box']/table/tr[@valign='top']//font[@color='green']/b").xpath("text()").to_s.strip.eql? "Global Internship"
+      category.entries['Exchange program'] = 1
+    else
+      category.entries['Exchange program'] = 2
+    end  
     langlevel_code = -1
     page.search("div[@class='left-content box']/table/tr/td").each do |td|
       text = td.xpath("text()").to_s.strip
@@ -63,15 +72,6 @@ class EPForm
         end
       end
     end
-    
-    ####### CATEGORY General ########    
-    category = EPFormCategory.new('General')
-    @categories << category
-    if page.search("div[@class='right-content box']/table/tr[@valign='top']//font[@color='green']/b").xpath("text()").to_s.strip.eql? "Global Internship"
-      category.entries['Exchange program'] = 1
-    else
-      category.entries['Exchange program'] = 2
-    end  
 #    page.search("div[@class='left-content box']//td").each do |td|
 #      text = td.xpath("text()").to_s.strip
 #      if text.eql? "Internship Earliest Start Date"
