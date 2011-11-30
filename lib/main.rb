@@ -28,10 +28,9 @@ login! agent, 'thomas.jandecka@aiesec.cz', 'C7A5Z1'
 puts "Logged in."
 
 ti = TimeInvestigator.new
-all_ep_forms(agent, "29.08.2011", "03.02.2012", ti) do |id, page|
+all_ep_forms(agent, "29.10.2011", "03.05.2012", ti) do |id, page|
   form = EPForm.new(id, page)
   ti.leap 'parsing'
-  break
   skills_in_table = form.serialize(skills_in_table, connection)
   puts "EP form extracted (#{ti.stop('db')})"
 end

@@ -13,61 +13,77 @@ class EPForm
     
     
     ####### CATEGORY General ########    
-    category = EPFormCategory.new('General')
-    @categories << category
+    category_general = EPFormCategory.new('General')
+    @categories << category_general
     if page.search("div[@class='right-content box']/table/tr[@valign='top']//font[@color='green']/b").xpath("text()").to_s.strip.eql? "Global Internship"
-      category.entries['Exchange program'] = 1
+      category_general.entries['Exchange program'] = 1
     else
-      category.entries['Exchange program'] = 2
-    end  
+      category_general.entries['Exchange program'] = 2
+    end
+    category_general.entries['Country'] = "'" + page.search("//font[@class='page-subHeaderNormal-class']").xpath("text()").to_s.gsub("\t", "").gsub("\n", " ").gsub("\r", "").strip + "'"
+    
+    category = nil
     langlevel_code = -1
     page.search("div[@class='left-content box']/table/tr/td").each do |td|
-      text = td.xpath("text()").to_s.strip
+      text = td.xpath("text()").to_s.gsub("\t", "").gsub("\n", " ").gsub("\r", "").strip
       unless text.empty?
-        if td.has_attribute? 'class'
-          puts text
-          case text
-          when "Basic"
-            langlevel_code = 1
-          when "Good"
-            langlevel_code = 2
-          when "Excellent"
-            langlevel_code = 3
-          when "Native"
-            langlevel_code = 4
-          end
-          if langlevel_code < 0
-            category = EPFormCategory.new(text)
-          else
-            category = EPFormCategory.new("Languages")
-          end
-          @categories << category
-        else
-          puts "\t" + text
-          praxis_code = -1
-          unless text.index("(Academic)").nil?
-            praxis_code = 1
-            text.slice! "(Academic)"
-          else
-            unless text.index("(Both)").nil?
-              praxis_code = 3
-              text.slice! "(Both)"
+        if td.parent.has_attribute? 'valign'
+          if td.has_attribute? 'class'
+            case text
+            when "Basic"
+              langlevel_code = 1
+            when "Good"
+              langlevel_code = 2
+            when "Excellent"
+              langlevel_code = 3
+            when "Native"
+              langlevel_code = 4
+            end
+            if langlevel_code < 0
+              category = EPFormCategory.new(text)
             else
-              unless text.index("(Working)").nil?
-                praxis_code = 2
-                text.slice! "(Working)"
+              category = EPFormCategory.new("Languages")
+            end
+            @categories << category
+          else
+            if category.nil?
+              next
+            end
+            praxis_code = -1
+            unless text.index("(Academic)").nil?
+              praxis_code = 1
+              text.slice! "(Academic)"
+            else
+              unless text.index("(Both)").nil?
+                praxis_code = 3
+                text.slice! "(Both)"
+              else
+                unless text.index("(Working)").nil?
+                  praxis_code = 2
+                  text.slice! "(Working)"
+                end
               end
             end
-          end
 
-          if praxis_code < 0
-            if langlevel_code < 0
-              category.entries[text] = 1
+            if praxis_code < 0
+              if langlevel_code < 0
+                category.entries[text] = 1
+              else
+                category.entries[text] = langlevel_code
+              end
             else
-              category.entries[text] = langlevel_code
+              category.entries[text] = praxis_code
             end
-          else
-            category.entries[text] = praxis_code
+          end
+        else
+          if td.has_attribute? 'class'
+            if ["Minimum Duration", "Maximum Duration"].include? text
+              category_general.entries[text] = td.next_sibling.next_sibling.text.gsub("\t", "").gsub("\n", " ").gsub("\r", "").strip.split(" ")[0]
+            else if ["Internship Earliest Start Date", "Internship Latest Date"].include? text
+                temp = td.next_sibling.next_sibling.text.gsub("\t", "").gsub("\n", " ").gsub("\r", "").strip.split(" ")[0].split(".")
+                category_general.entries[text] = temp[2] + temp[1] + temp[0]
+              end
+            end
           end
         end
       end
@@ -99,7 +115,7 @@ class EPForm
     # handle missing cols
     missing_cols = escaped_cols_values_map.keys-available_cols
     missing_cols.each do |missing_col|
-      connection.execute("ALTER TABLE `ep_forms` ADD COLUMN `#{missing_col}` TINYINT UNSIGNED NOT NULL DEFAULT '0' AFTER `id`;")
+      connection.execute("ALTER TABLE `ep_forms` ADD COLUMN `#{missing_col}` TINYINT UNSIGNED NOT NULL DEFAULT '0';")
       connection.execute("INSERT INTO `skills` (`code`, `name`, `category_id`) VALUES ('#{missing_col}', #{ActiveRecord::Base.sanitize(escaped_cols_cols_map[missing_col])}, #{cols_categories_map[missing_col]});")
     end
     
