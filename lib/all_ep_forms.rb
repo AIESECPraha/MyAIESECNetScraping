@@ -36,6 +36,7 @@ def all_ep_forms agent, date_from, date_to, ti
     page.search("font[@class='linkclass']").xpath("@onclick").children.each do |node|
       ep_id = node.to_s.split("'")[1]
       agent.transact do |transAgent|
+      begin
         transAgent.get("http://www.myaiesec.net/exchange/viewep.do",
           {
             'operation' => 'executeAction',
@@ -45,6 +46,9 @@ def all_ep_forms agent, date_from, date_to, ti
           {
             'Cookie' => agent.cookies.first.to_s
           }) {|getPage| ti.leap "site loading"; yield ep_id, getPage }
+          rescue Mechanize::ResponseCodeError => err
+          puts err.response_code+"Invalid EP form/Database error"
+          end
       end
     end
     counter += 1
