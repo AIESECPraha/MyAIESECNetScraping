@@ -56,11 +56,3 @@ def all_ep_forms agent, date_from, date_to, ti
 end
 
 
-############### DEBUG ####################
-#agent = Mechanize.new
-#login! agent, 'thomas.jandecka@aiesec.cz', 'C7A5Z1'
-#
-#all_ep_forms(agent, "28.05.2011", "28.05.2012") do |id,page|
-#  puts page.search("[@class='page-mainHeader-class']").text
-#  break
-#end
