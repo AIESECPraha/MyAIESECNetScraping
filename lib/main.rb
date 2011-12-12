@@ -37,6 +37,7 @@ end
 
 
 =begin
+Varianta pre zápis celej databázy to txt
 my_file = File.new("db.txt","w")
 all_ep_forms(agent, "5.12.2007", "30.09.2012", ti) do |id, page|
 preskoc=false
