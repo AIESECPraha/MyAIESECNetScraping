@@ -23,7 +23,7 @@ connection.execute("select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where TAB
 puts "Logging in..."
 
 agent = Mechanize.new
-login! agent, 'thomas.jandecka@aiesec.cz', 'C7A5Z1'
+login! agent, 'your_login', 'your_password'
 
 puts "Logged in."
 
